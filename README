@@ -1,3 +1,4 @@
+
 Project Overview
 This project aims to build an image captioning model. It will utilize a Convolutional Neural Network (CNN) for extracting features from images (encoder) and a Long Short-Term Memory (LSTM) network for decoding these features into descriptive captions. The ultimate goal is that users will provide an input image, and the model will automatically generate a fitting caption for it.
 
@@ -26,3 +27,4 @@ Train the model.
 Evaluate the model and generate captions for new images.
 
 It's basically a chatbot
+Dataset Link : https://drive.google.com/drive/u/0/folders/1rfrfcD3WWR28CSqRRQEHcJZRs4vgNO2D 
