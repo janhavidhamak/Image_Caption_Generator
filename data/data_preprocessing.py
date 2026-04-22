@@ -110,7 +110,7 @@ def extract_features(images_dir: str, feature_extractor, save_path: str = config
             arr = preprocess_image(path)
             feat = feature_extractor.predict(arr, verbose=0)
             features[fname] = feat.flatten()
-        except Exception as exc:  # noqa: BLE001
+        except (OSError, ValueError, Exception) as exc:  # noqa: BLE001
             logger.warning("Skipping %s: %s", fname, exc)
         if (i + 1) % 500 == 0:
             logger.info("  … %d / %d done", i + 1, len(image_files))
@@ -160,14 +160,18 @@ def create_data_generator(image_names, features, sequences, word_to_idx, max_len
 
 # ── Persistence helpers ───────────────────────────────────────────────────────
 
-def save_vocab(word_to_idx, idx_to_word, path: str = config.VOCAB_FILE):
+def save_vocab(word_to_idx, idx_to_word, path: str = config.VOCAB_FILE, max_len: int = None):
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    payload = {"word_to_idx": word_to_idx, "idx_to_word": idx_to_word}
+    if max_len is not None:
+        payload["max_len"] = max_len
     with open(path, "wb") as f:
-        pickle.dump({"word_to_idx": word_to_idx, "idx_to_word": idx_to_word}, f)
+        pickle.dump(payload, f)
     logger.info("Vocabulary saved to %s", path)
 
 
 def load_vocab(path: str = config.VOCAB_FILE):
     with open(path, "rb") as f:
         d = pickle.load(f)
-    return d["word_to_idx"], d["idx_to_word"]
+    max_len = d.get("max_len", None)
+    return d["word_to_idx"], d["idx_to_word"], max_len

@@ -38,7 +38,9 @@ class CaptionGenerator:
 
         logger.info("Loading model from %s", model_path)
         self.model = tf.keras.models.load_model(model_path)
-        self.word_to_idx, self.idx_to_word = load_vocab()
+        self.word_to_idx, self.idx_to_word, saved_max_len = load_vocab()
+        if saved_max_len is not None:
+            self.max_len = saved_max_len
         self.feature_extractor = build_feature_extractor()
         logger.info("Model loaded successfully.")
 

@@ -51,7 +51,7 @@ def main():
     max_len = min(get_max_caption_length(captions_mapping), config.MAX_CAPTION_LENGTH)
     logger.info("Vocab size: %d  |  Max caption length: %d", vocab_size, max_len)
 
-    save_vocab(word_to_idx, idx_to_word)
+    save_vocab(word_to_idx, idx_to_word, max_len=max_len)
 
     # 3. Extract image features
     logger.info("Extracting image features…")

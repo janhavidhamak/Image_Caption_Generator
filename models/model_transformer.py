@@ -7,23 +7,6 @@ import config
 from models.layers import PositionalEncoding
 
 
-def _multi_head_attention_block(d_model, num_heads, dff, dropout_rate):
-    """Return a single transformer decoder block as a Keras functional sub-graph."""
-    # inputs
-    query = tf.keras.layers.Input(shape=(None, d_model))
-    key_value = tf.keras.layers.Input(shape=(None, d_model))
-
-    attn = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model // num_heads)(query, key_value)
-    attn = tf.keras.layers.Dropout(dropout_rate)(attn)
-    out1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)(query + attn)
-
-    ffn = tf.keras.layers.Dense(dff, activation="relu")(out1)
-    ffn = tf.keras.layers.Dense(d_model)(ffn)
-    ffn = tf.keras.layers.Dropout(dropout_rate)(ffn)
-    out2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)(out1 + ffn)
-    return tf.keras.Model(inputs=[query, key_value], outputs=out2)
-
-
 def build_transformer_model(vocab_size: int, max_len: int = config.MAX_CAPTION_LENGTH) -> tf.keras.Model:
     """
     Image features projected to d_model, then used as encoder memory.

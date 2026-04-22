@@ -8,6 +8,7 @@ class BahdanauAttention(tf.keras.layers.Layer):
 
     def __init__(self, units: int, **kwargs):
         super().__init__(**kwargs)
+        self.units = units
         self.W1 = tf.keras.layers.Dense(units)
         self.W2 = tf.keras.layers.Dense(units)
         self.V = tf.keras.layers.Dense(1)
