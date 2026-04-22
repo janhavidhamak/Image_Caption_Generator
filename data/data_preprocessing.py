@@ -4,6 +4,8 @@ import os
 import re
 import pickle
 import logging
+import time
+import urllib.request
 from collections import Counter
 
 import numpy as np
@@ -76,11 +78,136 @@ def get_max_caption_length(captions_mapping: dict) -> int:
 
 # ── Image feature extraction ─────────────────────────────────────────────────
 
-def build_feature_extractor():
-    """Return InceptionV3 model with the classification head removed."""
-    base = InceptionV3(weights="imagenet", include_top=True)
-    model = tf.keras.Model(inputs=base.input, outputs=base.layers[-2].output)
-    return model
+# Keras cache directory where pre-trained weights are stored
+_KERAS_CACHE_DIR = os.path.join(os.path.expanduser("~"), ".keras", "models")
+
+# InceptionV3 weights file details
+_INCEPTION_WEIGHTS_FILENAME = "inception_v3_weights_tf_dim_ordering_tf_kernels.h5"
+_INCEPTION_WEIGHTS_URL = (
+    "https://storage.googleapis.com/tensorflow/keras-applications/inception_v3/"
+    "inception_v3_weights_tf_dim_ordering_tf_kernels.h5"
+)
+
+
+def download_inception_weights(
+    dest_dir: str = _KERAS_CACHE_DIR,
+    url: str = _INCEPTION_WEIGHTS_URL,
+) -> str:
+    """Download InceptionV3 ImageNet weights to *dest_dir* and return the local path.
+
+    This is a fallback helper for environments where the automatic Keras
+    download fails (e.g. corporate firewalls, flaky connections).  The file is
+    placed in the standard Keras model-cache directory so that subsequent calls
+    to ``InceptionV3(weights='imagenet')`` will find it automatically.
+
+    Example usage::
+
+        from data.data_preprocessing import download_inception_weights
+        download_inception_weights()
+
+    Parameters
+    ----------
+    dest_dir:
+        Directory where the weights file will be saved.
+        Defaults to ``~/.keras/models/``.
+    url:
+        Direct download URL for the weights file.
+
+    Returns
+    -------
+    str
+        Absolute path to the downloaded weights file.
+    """
+    os.makedirs(dest_dir, exist_ok=True)
+    dest_path = os.path.join(dest_dir, _INCEPTION_WEIGHTS_FILENAME)
+
+    if os.path.exists(dest_path):
+        logger.info("InceptionV3 weights already present at %s", dest_path)
+        return dest_path
+
+    logger.info("Downloading InceptionV3 weights from %s …", url)
+    logger.info("Destination: %s", dest_path)
+
+    try:
+        urllib.request.urlretrieve(url, dest_path)
+        logger.info("Download complete: %s", dest_path)
+    except Exception as exc:
+        # Remove any partial download so it is not mistaken for a valid file.
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
+        raise RuntimeError(
+            f"Failed to download InceptionV3 weights from {url}: {exc}\n"
+            "Please download the file manually and place it at:\n"
+            f"  {dest_path}"
+        ) from exc
+
+    return dest_path
+
+
+def build_feature_extractor(max_retries: int = 3, retry_delay: float = 2.0):
+    """Return InceptionV3 model with the classification head removed.
+
+    Automatically retries the weight download on transient network errors,
+    using exponential backoff between attempts.
+
+    Parameters
+    ----------
+    max_retries:
+        Maximum number of download attempts before raising the final error.
+    retry_delay:
+        Base delay in seconds between retries (doubles on each failure).
+
+    Raises
+    ------
+    RuntimeError
+        When all download attempts are exhausted.  The error message includes
+        instructions for manually downloading the weights via
+        :func:`download_inception_weights`.
+    """
+    if max_retries < 1:
+        raise ValueError(f"max_retries must be >= 1, got {max_retries}")
+
+    last_exc: Exception = RuntimeError("Unknown error")
+    delay = retry_delay
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            base = InceptionV3(weights="imagenet", include_top=True)
+            model = tf.keras.Model(inputs=base.input, outputs=base.layers[-2].output)
+            return model
+        except (OSError, ConnectionResetError, TimeoutError) as exc:
+            last_exc = exc
+            if attempt < max_retries:
+                logger.warning(
+                    "Attempt %d/%d failed (%s). Retrying in %.0fs…",
+                    attempt,
+                    max_retries,
+                    exc,
+                    delay,
+                )
+                time.sleep(delay)
+                delay *= 2  # exponential backoff
+            else:
+                logger.error(
+                    "All %d download attempts failed. Last error: %s",
+                    max_retries,
+                    exc,
+                )
+
+    weights_path = os.path.join(_KERAS_CACHE_DIR, _INCEPTION_WEIGHTS_FILENAME)
+    raise RuntimeError(
+        f"Could not download InceptionV3 pre-trained weights after {max_retries} "
+        f"attempt(s).\nLast error: {last_exc}\n\n"
+        "To fix this, download the weights manually:\n"
+        "  1. Run the following Python snippet:\n"
+        "       from data.data_preprocessing import download_inception_weights\n"
+        "       download_inception_weights()\n"
+        "  OR manually download the file from:\n"
+        f"       {_INCEPTION_WEIGHTS_URL}\n"
+        "  and place it at:\n"
+        f"       {weights_path}\n"
+        "  2. Then re-run your training command."
+    ) from last_exc
 
 
 def preprocess_image(image_path: str) -> np.ndarray:
