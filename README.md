@@ -209,6 +209,47 @@ All hyperparameters and paths are in `config.py`:
 
 ---
 
+## 🛠️ Troubleshooting
+
+### InceptionV3 weights download fails (`ConnectionResetError`)
+
+When running training for the first time, Keras automatically downloads the
+InceptionV3 pre-trained weights (~170 MB).  On unstable connections or behind
+corporate firewalls this download may fail with:
+
+```
+ConnectionResetError: [WinError 10054] An existing connection was forcibly
+closed by the remote host
+```
+
+The `build_feature_extractor()` function now retries the download automatically
+(3 attempts with exponential back-off).  If all retries fail, it prints a clear
+error message with recovery options.
+
+#### Option 1 – Use the built-in helper (recommended)
+
+```python
+from data.data_preprocessing import download_inception_weights
+download_inception_weights()
+```
+
+Then re-run your training command.
+
+#### Option 2 – Download manually
+
+1. Download the weights file directly:
+   ```
+   https://storage.googleapis.com/tensorflow/keras-applications/inception_v3/inception_v3_weights_tf_dim_ordering_tf_kernels.h5
+   ```
+
+2. Place it in your Keras cache directory:
+   - **Windows:** `%USERPROFILE%\.keras\models\`
+   - **macOS / Linux:** `~/.keras/models/`
+
+3. Re-run your training command.
+
+---
+
 ## 🔮 Future Improvements
 
 - [ ] Attention visualization heat-maps
