@@ -28,17 +28,21 @@ class PositionalEncoding(tf.keras.layers.Layer):
     """Sinusoidal positional encoding for transformer decoder."""
 
     def __init__(self, max_len: int, d_model: int, **kwargs):
+        if d_model % 2 != 0:
+            raise ValueError(f"d_model must be even for sinusoidal positional encoding; got {d_model}.")
         super().__init__(**kwargs)
         self.pos_encoding = self._make_encoding(max_len, d_model)
 
     @staticmethod
     def _make_encoding(max_len: int, d_model: int):
+        # d_model is guaranteed even by __init__
         positions = tf.cast(tf.range(max_len)[:, None], tf.float32)
         dims = tf.cast(tf.range(d_model)[None, :], tf.float32)
         angle_rates = 1 / tf.pow(10000.0, (2 * (dims // 2)) / tf.cast(d_model, tf.float32))
         angle_rads = positions * angle_rates
-        sines = tf.math.sin(angle_rads[:, 0::2])
-        cosines = tf.math.cos(angle_rads[:, 1::2])
+        half = d_model // 2
+        sines = tf.math.sin(angle_rads[:, :half])    # (max_len, d_model/2)
+        cosines = tf.math.cos(angle_rads[:, half:])  # (max_len, d_model/2)
         enc = tf.concat([sines, cosines], axis=-1)[None, :, :]  # (1, max_len, d_model)
         return tf.cast(enc, tf.float32)
 

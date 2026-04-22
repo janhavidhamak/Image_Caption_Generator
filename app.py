@@ -220,7 +220,7 @@ if uploaded is not None:
                     st.rerun()
                 except FileNotFoundError as exc:
                     st.error(str(exc))
-                except Exception as exc:  # noqa: BLE001
+                except (RuntimeError, ValueError) as exc:
                     st.error(f"Error generating caption: {exc}")
                     logger.exception("Caption generation failed")
 

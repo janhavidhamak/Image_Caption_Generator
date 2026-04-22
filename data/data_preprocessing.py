@@ -110,7 +110,7 @@ def extract_features(images_dir: str, feature_extractor, save_path: str = config
             arr = preprocess_image(path)
             feat = feature_extractor.predict(arr, verbose=0)
             features[fname] = feat.flatten()
-        except (OSError, ValueError, Exception) as exc:  # noqa: BLE001
+        except (OSError, ValueError, RuntimeError) as exc:
             logger.warning("Skipping %s: %s", fname, exc)
         if (i + 1) % 500 == 0:
             logger.info("  … %d / %d done", i + 1, len(image_files))

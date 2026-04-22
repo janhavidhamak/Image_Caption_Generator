@@ -15,7 +15,7 @@ venv/
 env/
 ENV/
 
-# Data & model artefacts (large files – download separately)
+# Data & model artifacts (large files – download separately)
 data_files/
 saved_models/
 *.pkl
