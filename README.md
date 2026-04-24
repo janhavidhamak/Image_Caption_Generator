@@ -1,21 +1,21 @@
-# 🖼️ Image Caption Generator
+# Image Caption Generator
 
 An end-to-end deep learning project that automatically generates descriptive captions for images using a **CNN-LSTM** architecture (with an optional **CNN-Transformer** alternative), and a **Streamlit** chatbot UI for interactive use.
 
 ---
 
-## ✨ Features
+##  Features
 
-- 🔍 **CNN Encoder** – Pre-trained InceptionV3 extracts rich 2048-dim image features
-- 📝 **LSTM Decoder** – Sequence-to-sequence caption generation with embedding layer
-- ⚡ **Transformer Decoder** – Multi-head cross-attention alternative for improved captions
-- 💬 **Streamlit UI** – Chat-style interface: upload images and get captions instantly
-- 🔎 **Greedy & Beam Search** – Choose your inference strategy
-- 🗃️ **Flickr8k Dataset** – Trained on ~8 000 images with 5 captions each
+-  **CNN Encoder** – Pre-trained InceptionV3 extracts rich 2048-dim image features
+-  **LSTM Decoder** – Sequence-to-sequence caption generation with embedding layer
+-  **Transformer Decoder** – Multi-head cross-attention alternative for improved captions
+-  **Streamlit UI** – Chat-style interface: upload images and get captions instantly
+-  **Greedy & Beam Search** – Choose your inference strategy
+-  **Flickr8k Dataset** – Trained on ~8 000 images with 5 captions each
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 Image ──► InceptionV3 ──► 2048-dim features
@@ -34,7 +34,7 @@ Image ──► InceptionV3 ──► 2048-dim features
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Image_Caption_Generator/
@@ -69,7 +69,7 @@ Image_Caption_Generator/
 
 ---
 
-## 🚀 Installation
+##  Installation
 
 ```bash
 # 1. Clone the repository
@@ -86,12 +86,12 @@ pip install -r requirements.txt
 
 ---
 
-## 📦 Dataset Setup
+##  Dataset Setup
 
 The images (~1 GB) are hosted on Google Drive. `captions.txt` is already included in the repo.
 
 1. Download **images.zip** from:  
-   👉 [Google Drive – images.zip](https://drive.google.com/drive/u/0/folders/1rfrfcD3WWR28CSqRRQEHcJZRs4vgNO2D)
+    [Google Drive – images.zip](https://drive.google.com/drive/u/0/folders/1rfrfcD3WWR28CSqRRQEHcJZRs4vgNO2D)
 
 2. Extract to `data_files/images/`:
 
@@ -111,7 +111,7 @@ data_files/
 
 ---
 
-## 🏋️ Training
+##  Training
 
 ### Train the CNN-LSTM model (default)
 
@@ -142,7 +142,7 @@ Training artifacts saved to `saved_models/`:
 
 ---
 
-## 💬 Streamlit App
+##  Streamlit App
 
 ```bash
 streamlit run app.py
@@ -159,7 +159,7 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 🔬 Inference API
+##  Inference API
 
 ```python
 from inference.inference import CaptionGenerator
@@ -178,7 +178,7 @@ print(caption)
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 All hyperparameters and paths are in `config.py`:
 
@@ -198,7 +198,7 @@ All hyperparameters and paths are in `config.py`:
 
 ---
 
-## 📈 Results
+##  Results
 
 | Model | BLEU-1 | BLEU-2 |
 |---|---|---|
@@ -209,7 +209,7 @@ All hyperparameters and paths are in `config.py`:
 
 ---
 
-## 🔮 Future Improvements
+##  Future Improvements
 
 - [ ] Attention visualization heat-maps
 - [ ] BLEU / METEOR / CIDEr evaluation metrics
@@ -220,6 +220,6 @@ All hyperparameters and paths are in `config.py`:
 
 ---
 
-## 📄 License
+##  License
 
 MIT License — feel free to use and modify.
